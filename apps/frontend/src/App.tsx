@@ -1,28 +1,16 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { APITester } from "./APITester";
-import "./index.css";
-
-import logo from "./logo.svg";
-import reactLogo from "./react.svg";
-import { Input } from "./components/ui/input";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { Form } from "./components/Form";
+import { Interview } from "./components/Interview";
+import { Result } from "./components/Result"; // 👈 Explicitly added the import path
 
 export function App() {
+  const [page, setpage] = useState<"form" | "result" | "interview">("form");
+
   return (
-    <div className="h-screen v-screen justify-center items-center">
-      <div>
-        <h2>Ai Interviewer</h2>
-        <div className="p-4">
-          <Input placeholder="Linkedin URL" />
-          
-        </div>
-        <div className="p-4"> 
-          <Input placeholder="Github URL" />  
-        </div>
-        <div className="flex justify-center p-4">
-          <Button>Start Interview</Button>
-        </div>
-      </div>
+    <div className="h-screen w-screen flex justify-center items-center">
+      {page === "form" && <Form />}
+      {page === "interview" && <Interview />}
+      {page === "result" && <Result />}
     </div>
   );
 }
