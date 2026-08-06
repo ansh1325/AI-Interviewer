@@ -12,26 +12,26 @@ import { BACKEND_URL } from "@/lib/config";
 
 export function Form(){
   const [github,setgithub]=useState("")
-  const [linkedin,setlinkedin]=useState("")
+  // const [linkedin,setlinkedin]=useState("")
   async function onsubmit(){
     const githubRegex = /^https?:\/\/(www\.)?github\.com\/[a-zA-Z0-9_-]+\/?$/;
-    const linkedinRegex = /^https?:\/\/(www\.)?linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/;
-    if(!github || !linkedin || !githubRegex.test(github) || !linkedinRegex.test(linkedin)){
+    // const linkedinRegex = /^https?:\/\/(www\.)?linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/;
+    if(!github || !githubRegex.test(github)){
       
-      toast("Please Provide valid github linkedin urls")
+      toast("Please Provide valid github urls")
     }
     await axios.post(`${BACKEND_URL}/api/v1/pre-interview`,{
-      linkedin,
+
       github
     })
   }
     return <div className="h-screen v-screen justify-center items-center">
       <div>
         <h2>Ai Interviewer</h2>
-        <div className="p-4">
+        {/* <div className="p-4">
           <Input placeholder="Linkedin URL" onChange={e=>setlinkedin(e.target.value)} />
           
-        </div>
+        </div> */}
         <div className="p-4"> 
           <Input placeholder="Github URL" onChange={e=>setgithub(e.target.value)} />  
         </div>
