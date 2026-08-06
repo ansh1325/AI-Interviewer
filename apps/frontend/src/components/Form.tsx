@@ -19,15 +19,16 @@ export function Form(){
     if(!github || !githubRegex.test(github)){
       
       toast("Please Provide valid github urls")
+      return
     }
     await axios.post(`${BACKEND_URL}/api/v1/pre-interview`,{
 
       github
     })
   }
-    return <div className="h-screen v-screen justify-center items-center">
+    return <div className="flex flex-col items-center justify-center w-full max-w-sm mx-auto">
       <div>
-        <h2>Ai Interviewer</h2>
+        <h2 className="text-3xl font-bold mb-6 text-black">Ai Interviewer</h2>
         {/* <div className="p-4">
           <Input placeholder="Linkedin URL" onChange={e=>setlinkedin(e.target.value)} />
           

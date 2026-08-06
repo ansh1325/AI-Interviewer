@@ -3,11 +3,11 @@ import express from "express";
 import { PreInterviewBody } from "./types";
 import axios  from "axios";
 import { scrapegithub } from "./scrapers/github";
-
+import cors from 'cors'
 const app=express();
 
 app.use(express.json());
-
+app.use(cors())
 app.post("/api/v1/pre-interview",async (req,res)=>{
     const {success,data}=PreInterviewBody.safeParse(req.body)
     if(!success){
@@ -26,7 +26,8 @@ app.post("/api/v1/pre-interview",async (req,res)=>{
   }
     // const linkedinUsername = linkedinMatch ? linkedinMatch[1] : null;
 
-    const githubdata=scrapegithub(githubUsername)
+    const githubdata=await scrapegithub(githubUsername)
     res.json({github:githubdata})
+    
 })
 app.listen(3001);
