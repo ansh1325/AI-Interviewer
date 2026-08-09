@@ -4,15 +4,20 @@
   "type": "module",
   "private": true,
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@types/pg": "^8.21.0",
+    "prisma": "^7.9.1"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.9.1",
     "@types/cors": "^2.8.19",
     "axios": "^1.19.0",
     "cors": "^2.8.6",
-    "https-proxy-agent": "^9.1.0"
+    "dotenv": "^17.4.2",
+    "https-proxy-agent": "^9.1.0",
+    "pg": "^8.23.0"
   }
 }

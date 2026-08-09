@@ -1,9 +1,11 @@
+import { id } from './../../node_modules/.bun/effect@3.20.0/node_modules/effect/src/Fiber';
 console.log("Hello via Bun!");
 import express from "express";
 import { PreInterviewBody } from "./types";
 import axios  from "axios";
 import { scrapegithub } from "./scrapers/github";
 import cors from 'cors'
+import {prisma} from "./db"
 const app=express();
 
 app.use(express.json());
@@ -27,7 +29,14 @@ app.post("/api/v1/pre-interview",async (req,res)=>{
     // const linkedinUsername = linkedinMatch ? linkedinMatch[1] : null;
 
     const githubdata=await scrapegithub(githubUsername)
-    res.json({github:githubdata})
+
+    const interview=await prisma.interview.create({
+        data:{
+            githubMetadata:JSON.stringify(githubdata),
+            status:"Pre"
+        }
+    })
+    res.json({id:interview.id})
     
 })
 app.listen(3001);
