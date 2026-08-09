@@ -5,7 +5,7 @@ import { Interview } from "./components/Interview";
 // import { toast } from "sonner"
 // // Add this line instead
 import { Toaster } from "@/components/ui/sonner"
-
+import {BrowserRouter,Routes, Route } from 'react-router'
 import './index.css'
 import { Result } from "./components/Result"; // 👈 Explicitly added the import path
 
@@ -13,12 +13,15 @@ export function App() {
   const [page, setpage] = useState<"form" | "result" | "interview">("form");
 
   return (
-    <div className="h-screen w-screen flex flex-col justify-center items-center bg-white">
-      {page === "form" && <Form />}
-      {page === "interview" && <Interview />}
-      {page === "result" && <Result />}
-      <Toaster />
-    </div>
+    <BrowserRouter>
+    <Routes>
+      <Route path="/" element={<Form/>}/>
+      <Route path="/interview/:id" element={<Interview/>}/>
+      <Route path="/result/:id" element={<Result/>}/>
+
+      
+    </Routes>
+    </BrowserRouter>
   );
 }
 

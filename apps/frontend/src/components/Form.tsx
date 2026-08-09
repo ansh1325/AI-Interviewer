@@ -9,9 +9,12 @@ import axios from "axios";
 import { Toaster } from "@/components/ui/sonner"
 
 import { BACKEND_URL } from "@/lib/config";
+import { useNavigate } from "react-router";
 
 export function Form(){
   const [github,setgithub]=useState("")
+  const [loading,setloading]=useState(false)
+  const navigate=useNavigate()
   // const [linkedin,setlinkedin]=useState("")
   async function onsubmit(){
     const githubRegex = /^https?:\/\/(www\.)?github\.com\/[a-zA-Z0-9_-]+\/?$/;
@@ -21,10 +24,12 @@ export function Form(){
       toast("Please Provide valid github urls")
       return
     }
-    await axios.post(`${BACKEND_URL}/api/v1/pre-interview`,{
+    setloading(true)
+    const response=await axios.post(`${BACKEND_URL}/api/v1/pre-interview`,{
 
       github
     })
+    navigate(`/interview/${response.data.id}`);
   }
     return <div className="flex flex-col items-center justify-center w-full max-w-sm mx-auto">
       <div>
@@ -37,7 +42,7 @@ export function Form(){
           <Input placeholder="Github URL" onChange={e=>setgithub(e.target.value)} />  
         </div>
         <div className="flex justify-center p-4">
-          <Button onClick={onsubmit}>Start Interview</Button>
+          <Button disabled={loading} onClick={onsubmit}>{loading?"Starting Interview...":"Start Interview"}</Button>
         </div>
       </div>
     </div>
