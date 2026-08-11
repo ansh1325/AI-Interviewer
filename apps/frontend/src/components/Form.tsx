@@ -24,12 +24,17 @@ export function Form(){
       toast("Please Provide valid github urls")
       return
     }
-    setloading(true)
-    const response=await axios.post(`${BACKEND_URL}/api/v1/pre-interview`,{
-
-      github
-    })
-    navigate(`/interview/${response.data.id}`);
+    try {
+      const response=await axios.post(`${BACKEND_URL}/api/v1/pre-interview`,{
+        github
+      })
+      navigate(`/interview/${response.data.id}`);
+    } catch (e: any) {
+      console.error(e);
+      toast("Error starting interview. Please check if the backend is running.");
+    } finally {
+      setloading(false);
+    }
   }
     return <div className="flex flex-col items-center justify-center w-full max-w-sm mx-auto">
       <div>

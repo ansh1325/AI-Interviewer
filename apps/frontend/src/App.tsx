@@ -13,15 +13,16 @@ export function App() {
   const [page, setpage] = useState<"form" | "result" | "interview">("form");
 
   return (
-    <BrowserRouter>
-    <Routes>
-      <Route path="/" element={<Form/>}/>
-      <Route path="/interview/:id" element={<Interview/>}/>
-      <Route path="/result/:id" element={<Result/>}/>
-
-      
-    </Routes>
-    </BrowserRouter>
+    <>
+      <Toaster />
+      <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Form/>}/>
+        <Route path="/interview/:interviewId" element={<Interview/>}/>
+        <Route path="/result/:interviewId" element={<Result/>}/>
+      </Routes>
+      </BrowserRouter>
+    </>
   );
 }
 
