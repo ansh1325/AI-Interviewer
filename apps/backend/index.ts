@@ -5,6 +5,7 @@ import axios  from "axios";
 import { scrapegithub } from "./scrapers/github";
 import cors from 'cors'
 import {prisma} from "./db"
+import { initSideband } from "./sideBand";
 const app=express();
 
 app.use(express.json());
@@ -41,7 +42,7 @@ app.post("/api/v1/pre-interview",async (req,res)=>{
     
 })
 
-app.post("/api/v1/session",async (req,res)=>{
+app.post("/api/v1/session/:interviewId",async (req,res)=>{
     const sessionConfig = JSON.stringify({
   type: "realtime",
   model: "gpt-realtime-2.1",
@@ -61,9 +62,14 @@ app.post("/api/v1/session",async (req,res)=>{
       },
       body: fd,
     });
+
+    const location = r.headers.get("Location");
+const callId = location?.split("/").pop()!;
+console.log(callId);
     // Send back the SDP we received from the OpenAI REST API
     const sdp = await r.text();
     res.send(sdp);
+    initSideband(callId,req.params.interviewId)
   } catch (error) {
     console.error("Token generation error:", error);
     res.status(500).json({ error: "Failed to generate token" });
