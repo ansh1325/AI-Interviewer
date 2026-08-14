@@ -19,28 +19,28 @@ pc.ontrack = (e) => (audioRef.current!.srcObject = e.streams[0]!);
 const ms = await navigator.mediaDevices.getUserMedia({
   audio: true,
 });
-pc.addTrack(ms.getTracks()[0]!);
+// pc.addTrack(ms.getTracks()[0]!);
 
-// Set up data channel for sending and receiving events
-// const dc = pc.createDataChannel("oai-events ");
+// // Set up data channel for sending and receiving events
+// // const dc = pc.createDataChannel("oai-events ");
 
-// Start the session using the Session Description Protocol (SDP)
-const offer = await pc.createOffer();
-await pc.setLocalDescription(offer);
+// // Start the session using the Session Description Protocol (SDP)
+// const offer = await pc.createOffer();
+// await pc.setLocalDescription(offer);
 
-const sdpResponse = await fetch(`${BACKEND_URL}/api/v1/session/${interviewId}`, {
-  method: "POST",
-  body: offer.sdp,
-  headers: {
-    "Content-Type": "application/sdp",
-  },
-});
+// const sdpResponse = await fetch(`${BACKEND_URL}/api/v1/session/${interviewId}`, {
+//   method: "POST",
+//   body: offer.sdp,
+//   headers: {
+//     "Content-Type": "application/sdp",
+//   },
+// });
 
-const answer = {
-  type: "answer" as 'answer',
-  sdp: await sdpResponse.text(),
-};
-await pc.setRemoteDescription(answer);
+// const answer = {
+//   type: "answer" as 'answer',
+//   sdp: await sdpResponse.text(),
+// };
+// await pc.setRemoteDescription(answer);
 
        })() 
 

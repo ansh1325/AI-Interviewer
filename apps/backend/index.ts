@@ -5,7 +5,7 @@ import axios  from "axios";
 import { scrapegithub } from "./scrapers/github";
 import cors from 'cors'
 import {prisma} from "./db"
-import { initSideband } from "./sideBand";
+import { initSideband } from "./sideband";
 const app=express();
 
 app.use(express.json());

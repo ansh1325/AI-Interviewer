@@ -16,7 +16,7 @@ ws.on("open", function open() {
       type: "session.update",
       session: {
         type: "realtime",
-        instructions: "You interview people based on their computer science intellect",
+        instructions: "You interview people based on their computer science intellect. Talk in english only",
       },
     })
   );
