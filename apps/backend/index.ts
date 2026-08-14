@@ -75,4 +75,15 @@ console.log(callId);
     res.status(500).json({ error: "Failed to generate token" });
   }
 })
+
+app.post("/api/v1/session/user/response/:interviewId",async (req,res)=>{
+const {message}=req.body;
+await prisma.message.create({
+  data:{
+    interviewId:req.params.interviewId!,
+    type:'User',
+    message:message
+  }
+})
+})
 app.listen(3001);
