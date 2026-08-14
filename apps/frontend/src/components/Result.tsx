@@ -6,14 +6,18 @@ interface Result{
     transcript:{type:"User"|"Assistant",content:string, createdAt:Date}[],
     score:number,
     feedback:string,
-   
+    status:"InProgress"|"Pre"|"Done"
+//    Pre
+//   InProgress
+//   Done
 }
 export function Result(){
     const {interviewId}=useParams()
     const [result,setresult]=useState<Result>({
     score:0,
     feedback:'',
-    transcript:[]
+    transcript:[],
+    status:"Pre"
    });
    useEffect(()=>{
 axios.get(`${BACKEND_URL}/api/v1/result/${interviewId}`)
@@ -25,6 +29,9 @@ axios.get(`${BACKEND_URL}/api/v1/result/${interviewId}`)
         axios.get(`${BACKEND_URL}/api/v1/result/${interviewId}`)
     .then(response=>{
         setresult(response.data);
+        if(response.data.status==="Done"){
+            clearInterval(intervalid)
+        }
 
     })
     }, 5*1000);
@@ -33,11 +40,13 @@ axios.get(`${BACKEND_URL}/api/v1/result/${interviewId}`)
     }
    },[interviewId])
    return <>
+{result.status=="Done"&& <div> 
+    Score-{result.score} <br />
+   Feedback-{result.feedback} br
+   
 
-   Score-{result.score}
-   Feedback-{result.feedback}
-
-   Transcript-{result.transcript.sort((a,b)=>a.createdAt.getTime()-b.createdAt.getTime()).map(x=><div>{x.type}-{x.content}</div>)}
+   Transcript-{result.transcript.map(x=><div>{x.type}-{x.content}</div>)}
+    </div>}
    
     </>
 }

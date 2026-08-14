@@ -6,6 +6,7 @@ import { scrapegithub } from "./scrapers/github";
 import cors from 'cors'
 import {prisma} from "./db"
 import { initSideband } from "./sideband";
+import { calculateResult } from "./result";
 const app=express();
 
 app.use(express.json());
@@ -108,6 +109,7 @@ app.get("api/v1/result/:interviewId",async(req,res)=>{
     })
     return
   }
+
   res.json({
     score:interview?.score,
     feedback:interview?.feedback,
@@ -115,7 +117,23 @@ app.get("api/v1/result/:interviewId",async(req,res)=>{
         type: c.type,
         content: c.message,
         createdAt: c.createdAt
-    }))
+    })),
+    status:interview.status
 });
+  if(interview.status!="Done"){
+const result=await calculateResult(interview.conversations)
+    
+prisma.interview.update({
+  where:{
+    id:req.params.interviewId
+  },
+  data:{
+    status:"Done",
+    feedback:result.feedback,
+    score:result.score 
+  }
+})
+  }
+  
 })
 app.listen(3001);
