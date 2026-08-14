@@ -1,10 +1,13 @@
 import { BACKEND_URL } from "@/lib/config";
 import { useEffect ,useRef} from "react"
 import { useParams } from "react-router"
+import { DeepgramClient } from "@deepgram/sdk";
+const client = new DeepgramClient();
 
 export function Interview(){
 
     const { interviewId }=useParams();
+
     const audioRef=useRef<HTMLAudioElement>(null)
     useEffect(()=>{
        (async ()=>{
@@ -20,6 +23,24 @@ const ms = await navigator.mediaDevices.getUserMedia({
   audio: true,
 });
 // pc.addTrack(ms.getTracks()[0]!);
+
+const connection = await client.listen.v1.connect({
+  model: "nova-3",
+  language: "en",
+  punctuate: "true",
+  interim_results: "true",
+});
+
+connection.on("open", () => console.log("Connection opened"));
+
+connection.on("message", (data) => {
+  if (data.type === "Results") {
+    console.log(data);
+  }
+});
+
+connection.connect();
+await connection.waitForOpen();
 
 // // Set up data channel for sending and receiving events
 // // const dc = pc.createDataChannel("oai-events ");
