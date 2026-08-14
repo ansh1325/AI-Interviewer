@@ -1,159 +1,173 @@
-# Turborepo starter
+# 🎙️ AI Technical Interviewer
 
-This Turborepo starter is maintained by the Turborepo core team.
+An autonomous, low-latency, voice-to-voice AI Technical Interviewer that reviews your GitHub profile and conducts real-time, context-aware coding and system design interviews. Built on WebRTC audio channels, WebSockets, and state-of-the-art transcription APIs.
 
-## Using this example
+[![Turborepo](https://img.shields.io/badge/Monorepo-Turborepo-ef4444?logo=turborepo)](https://turbo.build/)
+[![React](https://img.shields.io/badge/Frontend-React%20%2F%20Vite-blue?logo=react)](https://react.dev/)
+[![Express](https://img.shields.io/badge/Backend-Express%20%2F%20Bun-000000?logo=bun)](https://bun.sh/)
+[![Prisma](https://img.shields.io/badge/Database-PostgreSQL%20%2F%20Prisma-2b2254?logo=prisma)](https://www.prisma.io/)
+[![OpenAI Realtime](https://img.shields.io/badge/Speech-OpenAI%20Realtime-10a37f?logo=openai)](https://openai.com/)
+[![Deepgram](https://img.shields.io/badge/Transcription-Deepgram%20WebSocket-4700c2?logo=deepgram)](https://deepgram.com/)
 
-Run the following command:
+---
 
-```sh
-npx create-turbo@latest
+## ⚡ Why This Project? (Hiring Manager Quick Take)
+
+Most interview prep tools rely on text inputs, static forms, or slow TTS/STT pipelines that result in 3-5 seconds of latency—destroying the flow of conversational speech. 
+
+This project solves this by using **WebRTC SDP offer/answer exchanges** for full-duplex, sub-second latency voice streams with OpenAI's Realtime API. Simultaneously, local voice streams are multiplexed to **Deepgram via WebSockets** to maintain an instant database record of transcripts, analyzed post-session by Prisma + GPT models.
+
+---
+
+## 🏗️ System Architecture & Data Flow
+
+Below is the network topography detailing how the frontend and backend negotiate channels, exchange voice packets, and record transcripts:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Candidate
+    participant UI as React Frontend
+    participant Server as Bun Express Backend
+    participant DB as Postgres (Prisma)
+    participant OpenAI as OpenAI Realtime API
+    participant Deepgram as Deepgram (WebSockets)
+
+    Candidate->>UI: Input GitHub URL & Start Session
+    UI->>Server: POST /api/v1/pre-interview
+    Server->>Server: Scrape GitHub Repos & Bio Metadata
+    Server->>DB: Create Interview Record (Status: Pre)
+    Server-->>UI: Return Interview ID
+    UI->>UI: Request mic access & Start Local Stream
+    UI->>Server: Initiate WebRTC Exchange (SDP Offer)
+    Server->>OpenAI: Request Call Session (POST /realtime/calls)
+    OpenAI-->>Server: Return SDP Answer & Call Identifier
+    Server-->>UI: Return SDP Answer (WebRTC Audio Active)
+    
+    par Continuous Low-Latency Streams
+        UI<->>OpenAI: Sub-second voice exchange via WebRTC
+        UI->>Deepgram: Mic stream binary chunks (WebSockets)
+    end
+
+    Deepgram-->>UI: Return Live Text Transcripts
+    UI->>Server: POST /api/v1/session/user/:id (Save transcript)
+    Server->>DB: Write transcripts (MessageType: User/Assistant)
+
+    Candidate->>UI: Click "End Session"
+    UI->>Server: GET /api/v1/result/:id
+    Server->>DB: Fetch complete transcripts
+    Server->>Server: Calculate Final Score & Detailed Feedback
+    Server->>DB: Save Score & Update Status: Done
+    Server-->>UI: Deliver JSON performance report
+    UI->>Candidate: Display Performance Dashboard (Score / Feedback / Timeline)
 ```
 
-## What's inside?
+---
 
-This Turborepo includes the following packages/apps:
+## 🛠️ Core Engineering Highlights
 
-### Apps and Packages
+### 1. WebRTC & OpenAI Realtime Integration
+Rather than compiling audio blobs on the client side and sending them via REST endpoints, this system negotiates an RTCPeerConnection with `https://api.openai.com/v1/realtime/calls`. The server behaves as a signaling bridge, passing Session Description Protocol (SDP) configurations so the client browser and OpenAI communicate voice data directly over UDP, minimizing latency.
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+### 2. Live Audio Waveform & Speech Indicators
+To create a high-fidelity visual indicator without third-party canvas engines:
+- Built a native **Web Audio API `AudioContext`** that attaches to browser media streams.
+- Computes real-time Root Mean Square (RMS) volume levels.
+- Feeds volume percentages directly to React states driving dynamic, glassmorphic CSS scaling, rotation rates, and particle wave offsets.
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+### 3. GitHub Profile Context Scraper
+Questions are custom-generated for each candidate. The backend features a specialized GitHub scraper that inspects:
+- Repository programming languages.
+- Stars, descriptions, and pinned projects.
+- User bio details.
+This metadata forms the initialization context for the LLM voice agent, configuring it to grill the candidate on their actual engineering projects.
 
-### Utilities
+---
 
-This Turborepo has some additional tools already setup for you:
+## 🧬 Database Schema (Prisma)
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+The application maintains a structured PostgreSQL database via Prisma ORM for quick report generation:
 
-### Build
+```prisma
+model Interview {
+  id               String          @id @default(uuid())
+  githubMetadata   Json
+  status           InterviewStatus
+  score            Int             @default(0)
+  conversations    Message[]
+  feedback         String?
+}
 
-To build all apps and packages, run the following command:
+model Message {
+  id          String      @id @default(uuid())
+  message     String
+  type        MessageType
+  interviewId String
+  interview   Interview   @relation(fields: [interviewId], references: [id])
+  createdAt   DateTime    @default(now())
+}
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+enum MessageType {
+  User
+  Assistant
+}
 
-```sh
-cd my-turborepo
-turbo build
+enum InterviewStatus {
+  Pre
+  InProgress
+  Done
+}
 ```
 
-Without global `turbo`, use your package manager:
+---
 
-```sh
-cd my-turborepo
-npx turbo build
-bun dlx turbo build
-bun exec turbo build
+## 🚀 Setup & Execution Guide
+
+The project is structured as a **Turborepo monorepo** managed with **Bun**.
+
+### Prerequisites
+- [Bun Runtime](https://bun.sh/)
+- A PostgreSQL Database instance
+- API Keys for OpenAI and Deepgram
+
+### 1. Clone & Set Up Environments
+```bash
+git clone https://github.com/ansh1325/AI-Interviewer.git
+cd AI-Interviewer
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo build --filter=docs
+Create a `.env` file in `apps/backend/`:
+```env
+DATABASE_URL="postgresql://username:password@localhost:5432/ai_interviewer"
+OPENAI_KEY="sk-proj-your-openai-realtime-key"
 ```
 
-Without global `turbo`:
-
-```sh
-npx turbo build --filter=docs
-bun exec turbo build --filter=docs
-bun exec turbo build --filter=docs
+### 2. Install Dependencies
+```bash
+bun install
 ```
 
-### Develop
-
-To develop all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo dev
+### 3. Initialize Databases (Prisma Migration)
+```bash
+cd apps/backend
+bunx prisma db push
+cd ../..
 ```
 
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo dev
-bun exec turbo dev
-bun exec turbo dev
+### 4. Start Development Mode
+Run the Turborepo development pipeline (spins up both frontend and backend workspace targets simultaneously):
+```bash
+bun run dev
 ```
+- **Frontend App**: `http://localhost:5173` or port generated by Vite.
+- **Backend API**: `http://localhost:3001`
 
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+---
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+## 🧠 System Design & Scale Considerations (Showcasing Growth)
 
-```sh
-turbo dev --filter=web
-```
+If I were to scale this system to production, here are the architectural adjustments I would prioritize:
 
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=web
-bun exec turbo dev --filter=web
-bun exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-bun exec turbo login
-bun exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-bun exec turbo link
-bun exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+1. **Stateful Session Recovery**: If a WebSocket connection drops mid-interview, implementing a Redis session store would allow candidates to reconnect instantly and resume the interview without loss of state.
+2. **Audio Track Echo Cancellation**: Configuring standard constraints on `getUserMedia` (`echoCancellation: true, noiseSuppression: true`) prevents the microphone from capturing its own speakers, resolving loopback transcription overlaps.
+3. **Queue-based Transcription Analysis**: Moving post-interview score calculation and summary evaluation to a worker queue (e.g., BullMQ + Redis) would prevent blocking Express servers during large API payloads.
