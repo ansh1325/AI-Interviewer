@@ -1,4 +1,3 @@
-<img width="1195" height="896" alt="photo_2026-08-15_12-21-38" src="https://github.com/user-attachments/assets/eae2ea3c-8af1-435d-996e-a7bf878e0904" />
 # 🎙️ AI Technical Interviewer
 
 An autonomous, low-latency, voice-to-voice AI Technical Interviewer that reviews your GitHub profile and conducts real-time, context-aware coding and system design interviews. Built on WebRTC audio channels, WebSockets, and state-of-the-art transcription APIs.
