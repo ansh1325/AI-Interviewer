@@ -23,44 +23,6 @@ This project solves this by using **WebRTC SDP offer/answer exchanges** for full
 
 Below is the network topography detailing how the frontend and backend negotiate channels, exchange voice packets, and record transcripts:
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Candidate
-    participant UI as React Frontend
-    participant Server as Bun Express Backend
-    participant DB as Postgres (Prisma)
-    participant OpenAI as OpenAI Realtime API
-    participant Deepgram as Deepgram (WebSockets)
-
-    Candidate->>UI: Input GitHub URL & Start Session
-    UI->>Server: POST /api/v1/pre-interview
-    Server->>Server: Scrape GitHub Repos & Bio Metadata
-    Server->>DB: Create Interview Record (Status: Pre)
-    Server-->>UI: Return Interview ID
-    UI->>UI: Request mic access & Start Local Stream
-    UI->>Server: Initiate WebRTC Exchange (SDP Offer)
-    Server->>OpenAI: Request Call Session (POST /realtime/calls)
-    OpenAI-->>Server: Return SDP Answer & Call Identifier
-    Server-->>UI: Return SDP Answer (WebRTC Audio Active)
-    
-    par Continuous Low-Latency Streams
-        UI<->>OpenAI: Sub-second voice exchange via WebRTC
-        UI->>Deepgram: Mic stream binary chunks (WebSockets)
-    end
-
-    Deepgram-->>UI: Return Live Text Transcripts
-    UI->>Server: POST /api/v1/session/user/:id (Save transcript)
-    Server->>DB: Write transcripts (MessageType: User/Assistant)
-
-    Candidate->>UI: Click "End Session"
-    UI->>Server: GET /api/v1/result/:id
-    Server->>DB: Fetch complete transcripts
-    Server->>Server: Calculate Final Score & Detailed Feedback
-    Server->>DB: Save Score & Update Status: Done
-    Server-->>UI: Deliver JSON performance report
-    UI->>Candidate: Display Performance Dashboard (Score / Feedback / Timeline)
-```
 
 ---
 
