@@ -11,7 +11,7 @@ An autonomous, low-latency, voice-to-voice AI Technical Interviewer that reviews
 
 ---
 
-## ⚡ Why This Project? (Hiring Manager Quick Take)
+## ⚡ Why This Project?
 
 Most interview prep tools rely on text inputs, static forms, or slow TTS/STT pipelines that result in 3-5 seconds of latency—destroying the flow of conversational speech. 
 
