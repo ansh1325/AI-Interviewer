@@ -1,5 +1,6 @@
 # 🎙️ AI Technical Interviewer
 
+DEPLOYED- https://ai-interviewer-opensource.vercel.app/
 An autonomous, low-latency, voice-to-voice AI Technical Interviewer that reviews your GitHub profile and conducts real-time, context-aware coding and system design interviews. Built on WebRTC audio channels, WebSockets, and state-of-the-art transcription APIs.
 
 [![Turborepo](https://img.shields.io/badge/Monorepo-Turborepo-ef4444?logo=turborepo)](https://turbo.build/)
